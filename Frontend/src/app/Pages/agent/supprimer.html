@@ -1,0 +1,10 @@
+<h2 mat-dialog-title>Suspendre un utilisateur</h2>
+
+<mat-dialog-content class="mat-typography">
+  <h3>Voulez-vous suspendre cet utilisateur?</h3>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Annuler</button>
+  <button mat-button [mat-dialog-close]="true" cdkFocusInitial>Suspendre</button>
+</mat-dialog-actions>

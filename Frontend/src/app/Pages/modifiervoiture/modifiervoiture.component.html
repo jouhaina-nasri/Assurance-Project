@@ -1,0 +1,103 @@
+
+<div class="signup-form">
+    <form class="example-form" (ngSubmit)="onSubmit()">
+        <div class="row">
+           <div class="col-8 offset-4">
+             <h2>Modifier les informations liées au véhicule</h2>
+           </div>  
+        </div>  
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <mat-form-field>
+                    <mat-label>Matricule</mat-label>
+                    <input matInput type="text" name="matricule" class="form-1" id="matricule" required [(ngModel)]="voiture.matricule" >
+                    <span matSuffix><mat-icon> directions_car</mat-icon>&nbsp;</span>
+                </mat-form-field>
+            </div>
+            <div class="col-md-4 mb-4">
+                <mat-form-field  >
+                    <mat-label>Prix voiture</mat-label>
+                    <input matInput type="number" name="prix" class="form-1" id="prix" placeholder="0" required [(ngModel)]="voiture.prix">
+                    <span matSuffix>dt&nbsp;</span>
+                </mat-form-field>  
+            </div>
+            <div class="col-md-4 mb-4">
+                <mat-form-field >
+                    <mat-label>Type de voiture</mat-label>
+                    <mat-select [(ngModel)]="selectedValue" name="type" [(ngModel)]="voiture.type">
+                      <mat-option *ngFor="let type of types" [value]="type.value">
+                        {{type.viewValue}}
+                      </mat-option>
+                    </mat-select>
+                    <span matSuffix><mat-icon>commute</mat-icon>&nbsp;</span>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4" >
+                <mat-form-field>
+                    <mat-label>Nombre de place</mat-label>
+                    <input matInput type="number" name="nbplace" class="form-1" id="nbplace" required [(ngModel)]="voiture.nbplace">
+                    <span matSuffix><mat-icon>airline_seat_recline_normal</mat-icon>&nbsp;</span>
+                </mat-form-field>
+            </div>
+            <div class="col-md-4 mb-4">
+                <mat-form-field >
+                    <mat-label>Nombre de chevaux</mat-label>
+                    <mat-select [(ngModel)]="selectedValue1" name="cv" required [(ngModel)]="voiture.cv">
+                        <mat-option *ngFor="let cv of chevaux" [value]="cv.value">
+                        {{cv.viewValue}}
+                        </mat-option>
+                    </mat-select>
+                    <span matSuffix><mat-icon> directions_car</mat-icon>&nbsp;</span>
+                </mat-form-field>
+            </div>
+            <div class="col-md-4 mb-4" >
+                <mat-form-field >
+                    <mat-label>Durée</mat-label>
+                    <mat-select [(ngModel)]="selectedValue2" name="mf" required [(ngModel)]="voiture.mf">
+                        <mat-option *ngFor="let m of mf" [value]="m.value">
+                        {{m.viewValue}}
+                        </mat-option>
+                    </mat-select>
+                    <span matSuffix><mat-icon>event</mat-icon>&nbsp;</span>
+                </mat-form-field>
+            </div>
+        </div> 
+
+        <div class="row">
+            <div class="col-md-4 mb-4" >
+                <mat-form-field>
+                    <mat-label>Numéro carte d'identité</mat-label>
+                    <input matInput type="number" class="form-1" name="cin" id="cin" required [(ngModel)]="voiture.client.cin">
+                    <span matSuffix><mat-icon>folder_shared</mat-icon>&nbsp;</span>
+                </mat-form-field>
+            </div>
+            <div class="col-md-4 mb-4" style="margin-top: 20px;">
+                <mat-checkbox [formControl]="hideRequiredControl1">Assistance</mat-checkbox>
+            </div>
+            <div class="col-md-4 mb-4" style="margin-top: 20px;">
+                <mat-checkbox [formControl]="hideRequiredControl">Bris de glace</mat-checkbox>
+            </div>
+        </div> 
+        
+        <div class="row">
+            <div class="col-md-4 mb-4" style="margin-top: 20px;" *ngIf="this.hideRequiredControl.value==true"  >
+                <mat-radio-group 
+                name="radioOpt1" 
+                [(ngModel)]="selectedRadio"
+                (change)="radioChange($event)">
+                <mat-radio-button *ngFor="let opt of bg" 
+                    [value]="opt" >{{opt.viewValue}}dt</mat-radio-button>
+            </mat-radio-group>
+            </div>
+        </div> 
+        <div>
+            <button mat-button class="btn-danger" TYPE="reset" style="margin-top: 20px;">Annuler</button>
+            <button mat-button class="btn-primary" TYPE="submit" style="margin-top: 20px;">Modifierr</button>
+        </div>
+   
+    </form>
+  </div>
+ 

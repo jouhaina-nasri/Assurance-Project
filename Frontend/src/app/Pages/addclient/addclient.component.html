@@ -1,0 +1,65 @@
+
+<div class="signup-form">
+    <form class="example-form" [formGroup]="Formulaire" (ngSubmit)="onSubmit()">
+      <div class="row">
+          <div class="col-8 offset-4">
+             <h2>Ajouter nouvel client</h2>
+          </div>  
+      </div>  
+      <div class="row">
+        <div class="col-md-4 mb-4">
+          <mat-form-field>
+            <mat-label>Numéro carte d'identité</mat-label>
+            <input matInput type="number" name="cin" class="form-1" id="cin" required formControlName="cin" >
+            <span matSuffix><mat-icon>folder_shared</mat-icon>&nbsp;</span>
+          </mat-form-field>
+        </div>
+        <div class="col-md-4 mb-4" >
+          <mat-form-field>
+            <mat-label>Nom</mat-label>
+            <input matInput type="text" name="nom" id="nom" class="form-1" required formControlName="nom">
+            <span matSuffix><mat-icon>account_circle</mat-icon>&nbsp;</span>
+          </mat-form-field>
+        </div>
+        <div class="col-md-4 mb-4">
+          <mat-form-field>
+            <mat-label>Prenom</mat-label>
+            <input matInput type="text" name="prenom" class="form-1" id="prenom" required formControlName="prenom">
+            <span matSuffix><mat-icon>account_circle</mat-icon>&nbsp;</span>
+        </mat-form-field>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 mb-4" >
+            <mat-form-field >
+                <mat-label>Classe</mat-label>
+                <mat-select [(ngModel)]="selectedValue2" name="classe" required formControlName="classe">
+                    <mat-option *ngFor="let c of classe" [value]="c.value">
+                    {{c.viewValue}}
+                    </mat-option>
+                </mat-select>
+                <span matSuffix><mat-icon>star</mat-icon>&nbsp;</span>
+            </mat-form-field>
+        </div>
+        
+        <div class="col-md-4 mb-4" >
+          <mat-form-field >
+            <mat-label>Choisir l'agence</mat-label>
+            <mat-select [(ngModel)]="selectedValue" name="agence" required formControlName="agence">
+              <mat-option *ngFor="let agence of agences" [value]="agence" >
+                {{agence.local}}
+              </mat-option>
+            </mat-select>
+            <span matSuffix><mat-icon> place</mat-icon>&nbsp;</span>
+          </mat-form-field>
+        </div>
+      </div> 
+             
+      <div>
+        <button mat-button class="btn-danger" TYPE="reset" style="margin-top: 20px;">Annuler</button>
+        <button mat-button class="btn-primary" TYPE="submit" style="margin-top: 20px;">Enregistrer</button>
+      </div>
+   
+    </form>
+</div>
+ 
