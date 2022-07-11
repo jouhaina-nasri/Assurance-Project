@@ -1,5 +1,5 @@
 # Assurance-Project
-Calculer les tarifs  d'assurance automobile Spring Boot & Angular
+Calculer les tarifs  d'assurance automobile
 ---
 
 * Spring boot
