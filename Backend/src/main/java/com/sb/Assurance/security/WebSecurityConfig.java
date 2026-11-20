@@ -57,7 +57,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable().exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
-				.antMatchers("/api/auth/**").permitAll().antMatchers("/api/test/**").permitAll().anyRequest()
+				.antMatchers("/api/auth/**").permitAll().antMatchers("/api/test/**").permitAll()
+				// L'API REST générique de Camunda n'est pas exposée : le front passe par /sinistre.
+				// Cockpit et Tasklist (/camunda/**) ont leur propre authentification.
+				.antMatchers("/engine-rest/**").denyAll()
+				.anyRequest()
 				.permitAll();
 
 		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -1,0 +1,64 @@
+table {
+  width: 100%;
+}
+
+.mat-form-field {
+  font-size: 14px;
+  width: 100%;
+}
+
+.signup-form {
+  width: 100%;
+  padding: 30px 0;
+}
+
+.signup-form h2 {
+  color: #333;
+  margin: 0 0 30px 0;
+  display: inline-block;
+  padding: 0 40px 10px 0;
+  border-bottom: 3px solid #015a3e;
+}
+
+.btn-primary {
+  color: #fff;
+  background: #015a3e;
+  margin-right: 8px;
+}
+
+.btn-danger {
+  color: #fff;
+  background: #b3261e;
+  margin-right: 8px;
+}
+
+.erreur {
+  color: #b3261e;
+}
+
+.resultat p {
+  margin: 8px 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.niveau-FAIBLE, .statut-APPROUVE { background: #dff3e8; color: #015a3e; }
+.niveau-MOYEN, .statut-EN_VALIDATION { background: #fff1d6; color: #8a5300; }
+.niveau-ELEVE, .statut-REJETE { background: #fde2e0; color: #b3261e; }
+.niveau-INDISPONIBLE, .statut-EN_EVALUATION { background: #eceff1; color: #455a64; }
+.statut-EN_EXPERTISE { background: #e3e8fd; color: #2a3f9d; }
+
+.tache {
+  margin-bottom: 16px;
+}
+
+.tache .details span {
+  margin-right: 24px;
+}

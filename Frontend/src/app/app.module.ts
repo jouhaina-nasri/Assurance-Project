@@ -55,6 +55,9 @@ import { ModifierclientComponent } from './Pages/modifierclient/modifierclient.c
 import { ModifiervoitureComponent } from './Pages/modifiervoiture/modifiervoiture.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import {MatRadioModule} from '@angular/material/radio'
+import { AddsinistreComponent } from './Pages/addsinistre/addsinistre.component';
+import { SinistreComponent } from './Pages/sinistre/sinistre.component';
+import { TachesComponent } from './Pages/taches/taches.component';
 
 @NgModule({
   declarations: [
@@ -88,7 +91,10 @@ import {MatRadioModule} from '@angular/material/radio'
     ModifieragenceComponent,
     ModifieragentComponent,
     ModifierclientComponent,
-    ModifiervoitureComponent 
+    ModifiervoitureComponent,
+    AddsinistreComponent,
+    SinistreComponent,
+    TachesComponent
        ],
   imports: [  
     MatToolbarModule,
