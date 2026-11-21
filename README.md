@@ -136,6 +136,4 @@ contrôle du montant indemnisé.
 
 ## Limites et pistes
 
-- Les données d'entraînement sont synthétiques (voir plus haut).
-- Camunda 7 Community n'est plus maintenu depuis octobre 2025. La migration naturelle se fait vers
-  Camunda 8 ou vers Operaton, le fork communautaire de Camunda 7 compatible au niveau de l'API.
+- Les données d'entraînement sont synthétiques.
