@@ -1,0 +1,87 @@
+<div class="signup-form">
+  <div class="row">
+    <div class="col-8 offset-4">
+      <h2>Déclarer un sinistre</h2>
+    </div>
+  </div>
+
+  <form *ngIf="!resultat" [formGroup]="Formulaire" (ngSubmit)="onSubmit()">
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <mat-form-field>
+          <mat-label>Véhicule (matricule)</mat-label>
+          <mat-select formControlName="matricule" required>
+            <mat-option *ngFor="let v of voitures" [value]="v.matricule">
+              {{v.matricule}} — {{v.type}}
+            </mat-option>
+          </mat-select>
+          <span matSuffix><mat-icon>directions_car</mat-icon>&nbsp;</span>
+        </mat-form-field>
+      </div>
+      <div class="col-md-4 mb-4">
+        <mat-form-field>
+          <mat-label>Date du sinistre</mat-label>
+          <input matInput type="date" formControlName="dateSinistre" [max]="aujourdhui" required>
+        </mat-form-field>
+      </div>
+      <div class="col-md-4 mb-4">
+        <mat-form-field>
+          <mat-label>Type de sinistre</mat-label>
+          <mat-select formControlName="typeSinistre" required>
+            <mat-option *ngFor="let t of types" [value]="t.value">{{t.viewValue}}</mat-option>
+          </mat-select>
+          <span matSuffix><mat-icon>report_problem</mat-icon>&nbsp;</span>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <mat-form-field>
+          <mat-label>Montant déclaré</mat-label>
+          <input matInput type="number" min="1" formControlName="montantDeclare" required>
+          <span matSuffix>dt&nbsp;</span>
+        </mat-form-field>
+      </div>
+      <div class="col-md-8 mb-4">
+        <mat-form-field>
+          <mat-label>Description des circonstances</mat-label>
+          <textarea matInput rows="2" formControlName="description"></textarea>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 mb-4"><mat-checkbox formControlName="accidentNuit">Survenu de nuit</mat-checkbox></div>
+      <div class="col-md-4 mb-4"><mat-checkbox formControlName="presenceTemoins">Présence de témoins</mat-checkbox></div>
+      <div class="col-md-4 mb-4"><mat-checkbox formControlName="constatAmiable">Constat amiable signé</mat-checkbox></div>
+    </div>
+
+    <p class="erreur" *ngIf="erreur">{{erreur}}</p>
+    <mat-progress-bar *ngIf="envoi" mode="indeterminate"></mat-progress-bar>
+    <div>
+      <button mat-button class="btn-danger" type="reset">Annuler</button>
+      <button mat-button class="btn-primary" type="submit" [disabled]="envoi">Déclarer et évaluer</button>
+    </div>
+  </form>
+
+  <mat-card *ngIf="resultat" class="resultat">
+    <mat-card-title>Sinistre {{resultat.reference}} enregistré</mat-card-title>
+    <mat-card-content>
+      <p>
+        Score de risque (modèle ML) :
+        <span class="badge" [ngClass]="'niveau-' + resultat.niveauRisque">
+          {{resultat.scoreRisque !== null ? (resultat.scoreRisque * 100 | number:'1.0-1') + ' %' : 'non disponible'}}
+          — {{resultat.niveauRisque}}
+        </span>
+      </p>
+      <p>Circuit retenu : <strong>{{libellesRoutage[resultat.routage] || resultat.routage}}</strong></p>
+      <p>Statut : <span class="badge" [ngClass]="'statut-' + resultat.statut">{{libellesStatut[resultat.statut]}}</span></p>
+      <p *ngIf="resultat.montantIndemnise !== null">Montant indemnisé : {{resultat.montantIndemnise | number:'1.0-0'}} dt</p>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-button class="btn-primary" (click)="nouvelleDeclaration()">Nouvelle déclaration</button>
+      <button mat-button routerLink="/menu/sinistre">Voir la liste des sinistres</button>
+    </mat-card-actions>
+  </mat-card>
+</div>

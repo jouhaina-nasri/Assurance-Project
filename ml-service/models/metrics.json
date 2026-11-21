@@ -1,0 +1,75 @@
+{
+  "version": "risque-sinistre-20261120-2309",
+  "algorithme": "regression_logistique",
+  "calibration": "isotonic",
+  "features": [
+    "type_vehicule",
+    "type_sinistre",
+    "puissance_cv",
+    "valeur_vehicule",
+    "nb_places",
+    "classe_bonus_malus",
+    "montant_declare",
+    "ratio_montant_valeur",
+    "delai_declaration_jours",
+    "nb_sinistres_anterieurs",
+    "accident_nuit",
+    "presence_temoins",
+    "constat_amiable"
+  ],
+  "seuils": {
+    "moyen": 0.25,
+    "eleve": 0.55
+  },
+  "donnees": "data/sinistres_synthetiques.csv",
+  "nb_entrainement": 16000,
+  "nb_test": 4000,
+  "validation_croisee": {
+    "regression_logistique": {
+      "auc_moyenne": 0.8448,
+      "auc_ecart_type": 0.008
+    },
+    "gradient_boosting": {
+      "auc_moyenne": 0.8371,
+      "auc_ecart_type": 0.0087
+    }
+  },
+  "test": {
+    "auc_roc": 0.8562,
+    "average_precision": 0.5069,
+    "brier": 0.0716,
+    "precision@0.5": 0.6277,
+    "rappel@0.5": 0.2694,
+    "f1@0.5": 0.377,
+    "taux_positifs_test": 0.1095
+  },
+  "niveaux_test": {
+    "FAIBLE": {
+      "nb_sinistres": 3420,
+      "taux_reel_a_risque": 0.05
+    },
+    "MOYEN": {
+      "nb_sinistres": 439,
+      "taux_reel_a_risque": 0.3941
+    },
+    "ELEVE": {
+      "nb_sinistres": 141,
+      "taux_reel_a_risque": 0.6667
+    }
+  },
+  "importance_permutation": {
+    "delai_declaration_jours": 0.0859,
+    "ratio_montant_valeur": 0.0484,
+    "nb_sinistres_anterieurs": 0.0256,
+    "presence_temoins": 0.018,
+    "constat_amiable": 0.0164,
+    "type_sinistre": 0.0154,
+    "classe_bonus_malus": 0.012,
+    "type_vehicule": 0.0037,
+    "nb_places": 0.0033,
+    "accident_nuit": 0.0027,
+    "puissance_cv": 0.0009,
+    "valeur_vehicule": 0.0008,
+    "montant_declare": -0.0001
+  }
+}

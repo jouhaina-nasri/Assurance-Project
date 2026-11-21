@@ -261,6 +261,50 @@
                   </li>
 
 
+                  <li style="margin-top: 1em;" *ngIf="role[0]==='User'">
+                     <a>
+                        <i class="metismenu-icon" style="color:#015a3e ;"><mat-icon>car_crash</mat-icon></i>Gestion des sinistres
+                        <i class="metismenu-state-icon caret-left" style="color:#015a3e ;"><mat-icon>expand_more</mat-icon></i>
+                     </a>
+                     <ul>
+                        <li>
+                           <a routerLink="/menu/addsinistre">
+                              <i class="metismenu-icon"></i>Déclarer un sinistre
+                           </a>
+                        </li>
+                        <li>
+                           <a routerLink="/menu/sinistre">
+                              <i class="metismenu-icon"></i>Liste des sinistres
+                           </a>
+                        </li>
+                        <li>
+                           <a routerLink="/menu/taches">
+                              <i class="metismenu-icon"></i>Sinistres à valider
+                           </a>
+                        </li>
+                     </ul>
+                  </li>
+
+                  <li style="margin-top: 1em;" *ngIf="role[0]==='Admin'">
+                     <a>
+                        <i class="metismenu-icon" style="color:#015a3e ;"><mat-icon>fact_check</mat-icon></i>Expertise des sinistres
+                        <i class="metismenu-state-icon caret-left" style="color:#015a3e ;"><mat-icon>expand_more</mat-icon></i>
+                     </a>
+                     <ul>
+                        <li>
+                           <a routerLink="/menu/taches">
+                              <i class="metismenu-icon"></i>Sinistres à expertiser
+                           </a>
+                        </li>
+                        <li>
+                           <a routerLink="/menu/sinistre">
+                              <i class="metismenu-icon"></i>Liste des sinistres
+                           </a>
+                        </li>
+                     </ul>
+                  </li>
+
+
                   <li style="margin-top: 1em;" > 
  
                      <a (click)="logout()">

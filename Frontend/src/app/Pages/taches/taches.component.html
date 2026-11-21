@@ -1,0 +1,53 @@
+<div class="signup-form">
+  <h2>Sinistres à traiter</h2>
+</div>
+
+<mat-progress-bar *ngIf="chargement" mode="indeterminate"></mat-progress-bar>
+<p *ngIf="!chargement && taches.length === 0">Aucune tâche en attente.</p>
+
+<mat-card *ngFor="let t of taches" class="tache">
+  <mat-card-title>{{t.nom}} — {{t.sinistre.reference}}</mat-card-title>
+  <mat-card-subtitle>Créée le {{t.creation | date:'dd/MM/yyyy HH:mm'}}</mat-card-subtitle>
+  <mat-card-content>
+    <p class="details">
+      <span><strong>Véhicule :</strong> {{t.sinistre.voiture?.matricule}} ({{t.sinistre.voiture?.type}})</span>
+      <span><strong>Type :</strong> {{libellesType[t.sinistre.typeSinistre]}}</span>
+      <span><strong>Date :</strong> {{t.sinistre.dateSinistre | date:'dd/MM/yyyy'}}</span>
+      <span><strong>Montant déclaré :</strong> {{t.sinistre.montantDeclare | number:'1.0-0'}} dt</span>
+    </p>
+    <p class="details">
+      <span>
+        <strong>Risque (ML) :</strong>
+        <span class="badge" [ngClass]="'niveau-' + t.sinistre.niveauRisque">
+          {{t.sinistre.scoreRisque !== null ? (t.sinistre.scoreRisque * 100 | number:'1.0-1') + ' %' : 'non disponible'}}
+          — {{t.sinistre.niveauRisque}}
+        </span>
+      </span>
+      <span>Nuit : {{t.sinistre.accidentNuit ? 'oui' : 'non'}}</span>
+      <span>Témoins : {{t.sinistre.presenceTemoins ? 'oui' : 'non'}}</span>
+      <span>Constat amiable : {{t.sinistre.constatAmiable ? 'oui' : 'non'}}</span>
+    </p>
+    <p *ngIf="t.sinistre.description"><em>{{t.sinistre.description}}</em></p>
+
+    <div class="row">
+      <div class="col-md-4">
+        <mat-form-field>
+          <mat-label>Montant indemnisé</mat-label>
+          <input matInput type="number" min="0" [max]="t.sinistre.montantDeclare" [(ngModel)]="montants[t.id]">
+          <span matSuffix>dt&nbsp;</span>
+        </mat-form-field>
+      </div>
+      <div class="col-md-8">
+        <mat-form-field>
+          <mat-label>Commentaire (obligatoire en cas de rejet)</mat-label>
+          <input matInput [(ngModel)]="commentaires[t.id]">
+        </mat-form-field>
+      </div>
+    </div>
+    <p class="erreur" *ngIf="erreurs[t.id]">{{erreurs[t.id]}}</p>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-button class="btn-primary" (click)="decider(t, true)">Approuver</button>
+    <button mat-button class="btn-danger" (click)="decider(t, false)">Rejeter</button>
+  </mat-card-actions>
+</mat-card>

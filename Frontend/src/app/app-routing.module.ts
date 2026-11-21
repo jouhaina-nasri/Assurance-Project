@@ -23,6 +23,9 @@ import { ModifierclientComponent } from './Pages/modifierclient/modifierclient.c
 import { ModifiervoitureComponent } from './Pages/modifiervoiture/modifiervoiture.component';
 import { TaxiComponent } from './Pages/taxi/taxi.component';
 import { VoitureComponent } from './Pages/voiture/voiture.component';
+import { AddsinistreComponent } from './Pages/addsinistre/addsinistre.component';
+import { SinistreComponent } from './Pages/sinistre/sinistre.component';
+import { TachesComponent } from './Pages/taches/taches.component';
  
 
 const routes: Routes = [
@@ -49,7 +52,10 @@ const routes: Routes = [
     {path:"client",component:ClientComponent},
     {path:"addvoiture",component:AddvoitureComponent},
     {path:"modifiervoiture/:id",component:ModifiervoitureComponent},
-    {path:"voiture",component:VoitureComponent}
+    {path:"voiture",component:VoitureComponent},
+    {path:"addsinistre",component:AddsinistreComponent},
+    {path:"sinistre",component:SinistreComponent},
+    {path:"taches",component:TachesComponent}
     
   ]}
 ] 

@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_ApprobationSinistre"
+                  targetNamespace="http://sb.com/assurance/sinistre"
+                  exporter="Assurance-Project" exporterVersion="1.0">
+
+  <bpmn:process id="approbation-sinistre" name="Approbation des sinistres" isExecutable="true" camunda:historyTimeToLive="P180D">
+
+    <bpmn:startEvent id="Start_Declaration" name="Sinistre déclaré">
+      <bpmn:outgoing>Flow_Start_Eval</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_EvaluerRisque" name="Évaluer le risque (modèle ML)" camunda:delegateExpression="${evaluationRisqueDelegate}">
+      <bpmn:incoming>Flow_Start_Eval</bpmn:incoming>
+      <bpmn:outgoing>Flow_Eval_Dmn</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:businessRuleTask id="Task_Routage" name="Déterminer le routage (DMN)" camunda:decisionRef="decision-routage-sinistre" camunda:resultVariable="routage" camunda:mapDecisionResult="singleEntry">
+      <bpmn:incoming>Flow_Eval_Dmn</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dmn_Enreg</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+
+    <bpmn:serviceTask id="Task_EnregistrerRoutage" name="Enregistrer le routage" camunda:expression="${sinistreWorkflowService.enregistrerRoutage(execution)}">
+      <bpmn:incoming>Flow_Dmn_Enreg</bpmn:incoming>
+      <bpmn:outgoing>Flow_Enreg_Gw</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Routage" name="Routage ?">
+      <bpmn:incoming>Flow_Enreg_Gw</bpmn:incoming>
+      <bpmn:outgoing>Flow_Auto</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Validation</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Expertise</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_ApprobationAuto" name="Approuver automatiquement" camunda:expression="${sinistreWorkflowService.approuverAutomatiquement(execution)}">
+      <bpmn:incoming>Flow_Auto</bpmn:incoming>
+      <bpmn:outgoing>Flow_Auto_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="End_ApprouveAuto" name="Approuvé automatiquement">
+      <bpmn:incoming>Flow_Auto_End</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:userTask id="valider-sinistre" name="Valider le sinistre" camunda:candidateGroups="User">
+      <bpmn:extensionElements>
+        <camunda:taskListener expression="${sinistreWorkflowService.marquerStatut(task, 'EN_VALIDATION')}" event="create" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Validation</bpmn:incoming>
+      <bpmn:outgoing>Flow_Validation_Decision</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:boundaryEvent id="Timer_Escalade" name="Sans réponse sous 48 h" attachedToRef="valider-sinistre">
+      <bpmn:outgoing>Flow_Escalade</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_Escalade">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">${sinistreWorkflowService.delaiEscalade}</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+
+    <bpmn:userTask id="expertiser-sinistre" name="Expertise du sinistre" camunda:candidateGroups="Admin">
+      <bpmn:extensionElements>
+        <camunda:taskListener expression="${sinistreWorkflowService.marquerStatut(task, 'EN_EXPERTISE')}" event="create" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Expertise</bpmn:incoming>
+      <bpmn:incoming>Flow_Escalade</bpmn:incoming>
+      <bpmn:outgoing>Flow_Expertise_Decision</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Decision" name="Approuvé ?">
+      <bpmn:incoming>Flow_Validation_Decision</bpmn:incoming>
+      <bpmn:incoming>Flow_Expertise_Decision</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approuve</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Rejete</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_CloturerApprouve" name="Clôturer : approuvé" camunda:expression="${sinistreWorkflowService.cloturer(execution, true)}">
+      <bpmn:incoming>Flow_Approuve</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approuve_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_CloturerRejete" name="Clôturer : rejeté" camunda:expression="${sinistreWorkflowService.cloturer(execution, false)}">
+      <bpmn:incoming>Flow_Rejete</bpmn:incoming>
+      <bpmn:outgoing>Flow_Rejete_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="End_Approuve" name="Sinistre approuvé">
+      <bpmn:incoming>Flow_Approuve_End</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="End_Rejete" name="Sinistre rejeté">
+      <bpmn:incoming>Flow_Rejete_End</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Start_Eval" sourceRef="Start_Declaration" targetRef="Task_EvaluerRisque" />
+    <bpmn:sequenceFlow id="Flow_Eval_Dmn" sourceRef="Task_EvaluerRisque" targetRef="Task_Routage" />
+    <bpmn:sequenceFlow id="Flow_Dmn_Enreg" sourceRef="Task_Routage" targetRef="Task_EnregistrerRoutage" />
+    <bpmn:sequenceFlow id="Flow_Enreg_Gw" sourceRef="Task_EnregistrerRoutage" targetRef="Gateway_Routage" />
+    <bpmn:sequenceFlow id="Flow_Auto" name="Approbation auto" sourceRef="Gateway_Routage" targetRef="Task_ApprobationAuto">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${routage == 'AUTO_APPROBATION'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Validation" name="Validation" sourceRef="Gateway_Routage" targetRef="valider-sinistre">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${routage == 'VALIDATION_AGENT'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Expertise" name="Expertise" sourceRef="Gateway_Routage" targetRef="expertiser-sinistre">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${routage == 'EXPERTISE'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Auto_End" sourceRef="Task_ApprobationAuto" targetRef="End_ApprouveAuto" />
+    <bpmn:sequenceFlow id="Flow_Validation_Decision" sourceRef="valider-sinistre" targetRef="Gateway_Decision" />
+    <bpmn:sequenceFlow id="Flow_Escalade" name="Escalade" sourceRef="Timer_Escalade" targetRef="expertiser-sinistre" />
+    <bpmn:sequenceFlow id="Flow_Expertise_Decision" sourceRef="expertiser-sinistre" targetRef="Gateway_Decision" />
+    <bpmn:sequenceFlow id="Flow_Approuve" name="Oui" sourceRef="Gateway_Decision" targetRef="Task_CloturerApprouve">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approuve}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Rejete" name="Non" sourceRef="Gateway_Decision" targetRef="Task_CloturerRejete">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!approuve}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Approuve_End" sourceRef="Task_CloturerApprouve" targetRef="End_Approuve" />
+    <bpmn:sequenceFlow id="Flow_Rejete_End" sourceRef="Task_CloturerRejete" targetRef="End_Rejete" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="approbation-sinistre">
+      <bpmndi:BPMNShape id="Start_Declaration_di" bpmnElement="Start_Declaration">
+        <dc:Bounds x="152" y="232" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="131" y="275" width="78" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_EvaluerRisque_di" bpmnElement="Task_EvaluerRisque">
+        <dc:Bounds x="240" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Routage_di" bpmnElement="Task_Routage">
+        <dc:Bounds x="400" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_EnregistrerRoutage_di" bpmnElement="Task_EnregistrerRoutage">
+        <dc:Bounds x="560" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Routage_di" bpmnElement="Gateway_Routage" isMarkerVisible="true">
+        <dc:Bounds x="715" y="225" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="666" y="203" width="50" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ApprobationAuto_di" bpmnElement="Task_ApprobationAuto">
+        <dc:Bounds x="840" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ApprouveAuto_di" bpmnElement="End_ApprouveAuto">
+        <dc:Bounds x="1002" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="980" y="145" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="valider-sinistre_di" bpmnElement="valider-sinistre">
+        <dc:Bounds x="840" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Timer_Escalade_di" bpmnElement="Timer_Escalade">
+        <dc:Bounds x="872" y="272" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="912" y="305" width="70" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="expertiser-sinistre_di" bpmnElement="expertiser-sinistre">
+        <dc:Bounds x="840" y="370" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Decision_di" bpmnElement="Gateway_Decision" isMarkerVisible="true">
+        <dc:Bounds x="1015" y="225" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="955" y="258" width="55" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CloturerApprouve_di" bpmnElement="Task_CloturerApprouve">
+        <dc:Bounds x="1130" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CloturerRejete_di" bpmnElement="Task_CloturerRejete">
+        <dc:Bounds x="1130" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Approuve_di" bpmnElement="End_Approuve">
+        <dc:Bounds x="1292" y="172" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1267" y="215" width="86" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Rejete_di" bpmnElement="End_Rejete">
+        <dc:Bounds x="1292" y="312" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1275" y="355" width="70" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_Start_Eval_di" bpmnElement="Flow_Start_Eval">
+        <di:waypoint x="188" y="250" /><di:waypoint x="240" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Eval_Dmn_di" bpmnElement="Flow_Eval_Dmn">
+        <di:waypoint x="340" y="250" /><di:waypoint x="400" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Dmn_Enreg_di" bpmnElement="Flow_Dmn_Enreg">
+        <di:waypoint x="500" y="250" /><di:waypoint x="560" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Enreg_Gw_di" bpmnElement="Flow_Enreg_Gw">
+        <di:waypoint x="660" y="250" /><di:waypoint x="715" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Auto_di" bpmnElement="Flow_Auto">
+        <di:waypoint x="740" y="225" /><di:waypoint x="740" y="120" /><di:waypoint x="840" y="120" />
+        <bpmndi:BPMNLabel><dc:Bounds x="745" y="100" width="90" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Validation_di" bpmnElement="Flow_Validation">
+        <di:waypoint x="765" y="250" /><di:waypoint x="840" y="250" />
+        <bpmndi:BPMNLabel><dc:Bounds x="772" y="232" width="60" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Expertise_di" bpmnElement="Flow_Expertise">
+        <di:waypoint x="740" y="275" /><di:waypoint x="740" y="410" /><di:waypoint x="840" y="410" />
+        <bpmndi:BPMNLabel><dc:Bounds x="755" y="392" width="60" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Auto_End_di" bpmnElement="Flow_Auto_End">
+        <di:waypoint x="940" y="120" /><di:waypoint x="1002" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Validation_Decision_di" bpmnElement="Flow_Validation_Decision">
+        <di:waypoint x="940" y="250" /><di:waypoint x="1015" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Escalade_di" bpmnElement="Flow_Escalade">
+        <di:waypoint x="890" y="308" /><di:waypoint x="890" y="370" />
+        <bpmndi:BPMNLabel><dc:Bounds x="897" y="340" width="45" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Expertise_Decision_di" bpmnElement="Flow_Expertise_Decision">
+        <di:waypoint x="940" y="410" /><di:waypoint x="1040" y="410" /><di:waypoint x="1040" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Approuve_di" bpmnElement="Flow_Approuve">
+        <di:waypoint x="1040" y="225" /><di:waypoint x="1040" y="190" /><di:waypoint x="1130" y="190" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1080" y="172" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Rejete_di" bpmnElement="Flow_Rejete">
+        <di:waypoint x="1065" y="250" /><di:waypoint x="1095" y="250" /><di:waypoint x="1095" y="330" /><di:waypoint x="1130" y="330" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1102" y="312" width="22" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Approuve_End_di" bpmnElement="Flow_Approuve_End">
+        <di:waypoint x="1230" y="190" /><di:waypoint x="1292" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Rejete_End_di" bpmnElement="Flow_Rejete_End">
+        <di:waypoint x="1230" y="330" /><di:waypoint x="1292" y="330" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="Definitions_RoutageSinistre"
+             name="Routage des sinistres"
+             namespace="http://sb.com/assurance/sinistre">
+
+  <!--
+    Combine le niveau de risque prédit par le modèle ML et le montant déclaré (DT)
+    pour choisir le circuit d'approbation. Modifiable sans toucher au code Java.
+  -->
+  <decision id="decision-routage-sinistre" name="Routage du sinistre">
+    <decisionTable id="DecisionTable_Routage" hitPolicy="UNIQUE">
+      <input id="Input_Niveau" label="Niveau de risque (ML)">
+        <inputExpression id="InputExpression_Niveau" typeRef="string">
+          <text>niveauRisque</text>
+        </inputExpression>
+      </input>
+      <input id="Input_Montant" label="Montant déclaré (DT)">
+        <inputExpression id="InputExpression_Montant" typeRef="double">
+          <text>montantDeclare</text>
+        </inputExpression>
+      </input>
+      <output id="Output_Routage" label="Routage" name="routage" typeRef="string" />
+
+      <rule id="Rule_Indisponible">
+        <description>Service ML indisponible : contrôle humain</description>
+        <inputEntry id="IE_1_1"><text>"INDISPONIBLE"</text></inputEntry>
+        <inputEntry id="IE_1_2"><text>-</text></inputEntry>
+        <outputEntry id="OE_1"><text>"VALIDATION_AGENT"</text></outputEntry>
+      </rule>
+      <rule id="Rule_Eleve">
+        <description>Risque élevé : expertise quel que soit le montant</description>
+        <inputEntry id="IE_2_1"><text>"ELEVE"</text></inputEntry>
+        <inputEntry id="IE_2_2"><text>-</text></inputEntry>
+        <outputEntry id="OE_2"><text>"EXPERTISE"</text></outputEntry>
+      </rule>
+      <rule id="Rule_Moyen_Normal">
+        <inputEntry id="IE_3_1"><text>"MOYEN"</text></inputEntry>
+        <inputEntry id="IE_3_2"><text>&lt;= 20000</text></inputEntry>
+        <outputEntry id="OE_3"><text>"VALIDATION_AGENT"</text></outputEntry>
+      </rule>
+      <rule id="Rule_Moyen_Gros">
+        <inputEntry id="IE_4_1"><text>"MOYEN"</text></inputEntry>
+        <inputEntry id="IE_4_2"><text>&gt; 20000</text></inputEntry>
+        <outputEntry id="OE_4"><text>"EXPERTISE"</text></outputEntry>
+      </rule>
+      <rule id="Rule_Faible_Petit">
+        <description>Risque faible et petit montant : approbation automatique</description>
+        <inputEntry id="IE_5_1"><text>"FAIBLE"</text></inputEntry>
+        <inputEntry id="IE_5_2"><text>&lt;= 3000</text></inputEntry>
+        <outputEntry id="OE_5"><text>"AUTO_APPROBATION"</text></outputEntry>
+      </rule>
+      <rule id="Rule_Faible_Moyen">
+        <inputEntry id="IE_6_1"><text>"FAIBLE"</text></inputEntry>
+        <inputEntry id="IE_6_2"><text>]3000..20000]</text></inputEntry>
+        <outputEntry id="OE_6"><text>"VALIDATION_AGENT"</text></outputEntry>
+      </rule>
+      <rule id="Rule_Faible_Gros">
+        <inputEntry id="IE_7_1"><text>"FAIBLE"</text></inputEntry>
+        <inputEntry id="IE_7_2"><text>&gt; 20000</text></inputEntry>
+        <outputEntry id="OE_7"><text>"EXPERTISE"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_Routage">
+      <dmndi:DMNShape id="DMNShape_Routage" dmnElementRef="decision-routage-sinistre">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

@@ -1,0 +1,75 @@
+<div class="signup-form">
+  <h2>Liste des sinistres</h2>
+</div>
+
+<mat-form-field appearance="standard">
+  <mat-label>Chercher (référence, matricule, statut…)</mat-label>
+  <input matInput (keyup)="applyFilter($event)" #input>
+</mat-form-field>
+
+<div class="mat-elevation-z8">
+  <table mat-table [dataSource]="dataSource" matSort>
+
+    <ng-container matColumnDef="reference">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Référence</th>
+      <td mat-cell *matCellDef="let s">{{s.reference}}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="matricule">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Véhicule</th>
+      <td mat-cell *matCellDef="let s">{{s.voiture?.matricule}}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="typeSinistre">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+      <td mat-cell *matCellDef="let s">{{libellesType[s.typeSinistre]}}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="dateSinistre">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+      <td mat-cell *matCellDef="let s">{{s.dateSinistre | date:'dd/MM/yyyy'}}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="montantDeclare">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Montant déclaré</th>
+      <td mat-cell *matCellDef="let s">{{s.montantDeclare | number:'1.0-0'}} dt</td>
+    </ng-container>
+
+    <ng-container matColumnDef="scoreRisque">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Risque (ML)</th>
+      <td mat-cell *matCellDef="let s">
+        <span class="badge" [ngClass]="'niveau-' + s.niveauRisque">
+          {{s.scoreRisque !== null ? (s.scoreRisque * 100 | number:'1.0-1') + ' %' : '—'}} {{s.niveauRisque}}
+        </span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="routage">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Circuit</th>
+      <td mat-cell *matCellDef="let s">{{libellesRoutage[s.routage] || '—'}}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="statut">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
+      <td mat-cell *matCellDef="let s">
+        <span class="badge" [ngClass]="'statut-' + s.statut">{{libellesStatut[s.statut]}}</span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="montantIndemnise">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Indemnisé</th>
+      <td mat-cell *matCellDef="let s" [title]="s.commentaireDecision || ''">
+        {{s.montantIndemnise !== null ? (s.montantIndemnise | number:'1.0-0') + ' dt' : '—'}}
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell" [attr.colspan]="displayedColumns.length">Aucun sinistre ne correspond à « {{input.value}} »</td>
+    </tr>
+  </table>
+
+  <mat-paginator [pageSizeOptions]="[10, 25, 100]" aria-label="Pagination des sinistres"></mat-paginator>
+</div>
